@@ -1,0 +1,81 @@
+{% extends "analizer/base.html" %}
+
+{% block title %}Data from logs{% endblock %}
+
+{% block content %}
+    <ul>
+        {% for ip in ips %}
+            <li>{{ ip }}</li>
+        {% endfor %}
+    </ul>
+    <div class="fortable">
+        <div id="pages">
+            {% if is_paginated %}
+                {% if page_obj.has_previous %}
+                    {% if page_obj.number != 2 %}
+                        <a class="btn btn-outline-info mb-4 btn-lg" href="?q={{ q }}&page=1">First</a>
+                    {% endif %}
+                    <a class="btn btn-outline-info mb-4 btn-lg" href="?q={{ q }}&page={{ page_obj.previous_page_number }}">Previous</a>
+                {% endif %}
+                {% for num in paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <a class="btn btn-info mb-4 btn-lg" href="?q={{ q }}&page={{ num }}">{{ num }}</a>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a class="btn btn-outline-info mb-4 btn-lg" href="?q={{ q }}&page={{ num }}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <a class="btn btn-outline-info mb-4 btn-lg"
+                       href="?q={{ q }}&page={{ page_obj.next_page_number }}">Next</a>
+                    {% if page_obj.number != page_obj.paginator.num_pages|add:'-1' %}
+                        <a class="btn btn-outline-info mb-4 btn-lg"
+                           href="?q={{ q }}&page={{ page_obj.paginator.num_pages }}">Last</a>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </div>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th scope="col" colspan="7">Data from log</th>
+            </tr>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Date and Time</th>
+                <th scope="col">IP</th>
+                <th scope="col">Requested Path</th>
+                <th scope="col">Status Code</th>
+                <th scope="col">Response Size</th>
+                <th scope="col">Full Data</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if object_list.count != 0 %}
+                {% for logdata in object_list %}
+                    <tr>
+                        <td>{{ logdata.pk }}</td>
+                        <td>{{ logdata.datetime }}</td>
+                        <td>{{ logdata.ip }}</td>
+                        <td>
+                            {% if logdata.requested_path|length > 30 %}
+                                {{ logdata.requested_path|truncatechars:30 }}
+                            {% else %}
+                                {{ logdata.requested_path }}
+                            {% endif %}
+                        </td>
+                        <td>{{ logdata.status_code }}</td>
+                        <td>{{ logdata.size_requested_obj }}</td>
+                        <td><a href="{% url 'analizer:logdatadetail' logdata.pk %}?q={{ q }}">
+                            <button type="button" class="btn btn-success viewbtn">View</button>
+                        </a></td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7">No Data In This Log File</td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

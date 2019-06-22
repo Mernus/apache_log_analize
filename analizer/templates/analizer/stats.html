@@ -1,0 +1,47 @@
+{% extends "analizer/base.html" %}
+
+{% block title %}Data from logs{% endblock %}
+
+{% block content %}
+    <div class="fortable stats">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th scope="col" colspan="2">Stats From Log</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th style="width:35%">Unique ips number</th>
+                <td>{{ unic_ips_count }}</td>
+            </tr>
+            <tr>
+                <th scope="col" colspan="2">Most Common IP's</th>
+            </tr>
+            {% for ip, ip_used_num in first_ips %}
+                <tr>
+                    <th>{{ ip }}</th>
+                    <td>{{ ip_used_num }}</td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <th scope="col" colspan="2">Used HTTP methods</th>
+            </tr>
+            {% for method, method_used_num in http_methods %}
+                <tr>
+                    <th>
+                        <div style="white-space:pre-wrap; word-wrap:break-word; width:500px">
+                            {{ method }}
+                        </div>
+                    </th>
+                    <td>{{ method_used_num }}</td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <th style="width:35%">Size of the object requested</th>
+                <td>{{ sum_answer_size }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

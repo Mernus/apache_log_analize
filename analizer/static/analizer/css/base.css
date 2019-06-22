@@ -1,0 +1,85 @@
+body {
+    background: white url("../images/background.png");
+}
+
+.navbar {
+    border-radius: 0;
+}
+
+.navbar-brand {
+    font-family: 'Dancing Script', cursive;
+    font-size: 25px;
+    margin-bottom: 7px;
+}
+
+.nav > li {
+    font-size: 20px;
+    font-family: 'Marck Script', cursive;
+}
+
+th {
+    background-color: #f4b942;
+}
+
+td, th {
+    height: 50px;
+    text-align: center;
+    border: 2px solid black;
+    vertical-align: center;
+    line-height: 50px;
+}
+
+table {
+    border: 2px solid black;
+}
+
+div.fortable {
+    display: block;
+    margin: auto;
+    width: 80%;
+}
+
+table tr:nth-child(2n) {
+    background-color: #e5d1b0;
+}
+
+table tr:nth-child(2n+1) {
+    background-color: #fff6db;
+}
+
+.viewbtn{
+    width: 150px;
+}
+
+footer#footer{
+    color: whitesmoke;
+    text-align: center;
+    bottom: 0;
+    margin-bottom: 0;
+    position: fixed;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+    background-color: #222;
+    height: 8%;
+    padding-top: 15px;
+    font-family: 'Courgette', cursive;
+}
+
+div#pages{
+    text-align: center;
+    margin: 10px auto;
+}
+
+.btn-outline-info{
+    border: 2px solid #5bc0de;
+}
+
+div.detailtable{
+    display: block;
+    margin: auto;
+    width: 80%;
+}
+.stats{
+    width: 50% !important;
+}
