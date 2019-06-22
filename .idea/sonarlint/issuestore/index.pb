@@ -25,3 +25,5 @@ Z
 *analizer/templates/analizer/logdetail.html,6\a\6a313c6381b0259eb5a7edf81baf5b1849d5767f
 V
 &analizer/templates/analizer/stats.html,4\d\4dd98fb11f8183a77e7549a41d865c33b1f76f16
+B
+docker-compose.yml,3\5\35b8c13cf2eb2a194eada000eb310d65aed53b2a
