@@ -30,10 +30,10 @@ DATABASES = {
 }
 ```
 
-To create a database for our blog, let's run the following in the console: `python manage.py migrate` (we need to be in directory that contains the `manage.py` file). If that goes well, you should see something like this:
+To create a database for our project, run the following in the console: `python manage.py migrate` (you need to be in directory that contains the `manage.py` file). If that goes well, you should see something like this:
 
 ```
-(myvenv) ~/djangogirls$ python manage.py migrate
+(venv) C:\Users\mernu\PycharmProjects\apache_log_analize>python manage.py migrate
 Operations to perform:
   Apply all migrations: auth, admin, contenttypes, sessions
 Running migrations:
@@ -52,11 +52,6 @@ Running migrations:
   Applying auth.0008_alter_user_username_max_length... OK
   Applying auth.0009_alter_user_last_name_max_length... OK
   Applying sessions.0001_initial... OK
-```
-Create the database:
-
-```bash
-python manage.py migrate
 ```
 
 ## Run Project Locally
