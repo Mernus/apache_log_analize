@@ -1,0 +1,72 @@
+{% extends "analizer/base.html" %}
+
+{% block title %}Added logs{% endblock %}
+
+{% block content %}
+    <div class="fortable">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Log Url</th>
+                <th scope="col">Add Date and Time</th>
+                <th scope="col">Data From Log</th>
+                <th scope="col">Stats From Log</th>
+                <th scope="col">Download Data From Log</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if object_list %}
+                {% for logfile in object_list %}
+                    {% if logfile.logdata_set.count != 0 %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ logfile.log_url }}</td>
+                            <td>{{ logfile.added_datetime }}</td>
+                            <td><a href="{% url 'analizer:logdetail' logfile.pk %}?q={{ q }}">
+                                <button type="button" class="btn btn-success viewbtn">View</button>
+                            </a></td>
+                            <td><a href="{% url 'analizer:logstats' logfile.pk %}?q={{ q }}">
+                                <button type="button" class="btn btn-success viewbtn">View Stats</button>
+                            </a></td>
+                            <td><a href="{% url 'analizer:download' logfile.pk %}?q={{ q }}">
+                                <button type="button" class="btn btn-success viewbtn">Download</button>
+                            </a></td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="6">No Log Files</td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+        <div id="pages">
+            {% if is_paginated %}
+                {% if page_obj.has_previous %}
+                    {% if page_obj.number != 2 %}
+                        <a class="btn btn-outline-info mb-4 btn-lg" href="?q={{ q }}&page=1">First</a>
+                    {% endif %}
+                    <a class="btn btn-outline-info mb-4 btn-lg"
+                       href="?q={{ q }}&page={{ page_obj.previous_page_number }}">Previous</a>
+                {% endif %}
+                {% for num in paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <a class="btn btn-info mb-4 btn-lg" href="?q={{ q }}&page={{ num }}">{{ num }}</a>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a class="btn btn-outline-info mb-4 btn-lg" href="?q={{ q }}&page={{ num }}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <a class="btn btn-outline-info mb-4 btn-lg"
+                       href="?q={{ q }}&page={{ page_obj.next_page_number }}">Next</a>
+                    {% if page_obj.number != page_obj.paginator.num_pages|add:'-1' %}
+                        <a class="btn btn-outline-info mb-4 btn-lg"
+                           href="?q={{ q }}&page={{ page_obj.paginator.num_pages }}">Last</a>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
