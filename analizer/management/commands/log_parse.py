@@ -17,7 +17,7 @@ class Command(BaseCommand):
                             help='Download, parse and push to db data from log(print the url after log_parse)')
 
     @staticmethod
-    def not_one_log(self, urllog):
+    def same_log_indb(self, urllog):
         # Получаем все логи с данным url
         logs_added = Logfile.objects.filter(log_url=urllog)
         if logs_added:
@@ -96,7 +96,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options['log_path']:  # Если был отправлен путь
-            Command.not_one_log(self, options['log_path'])  # Если были добавлены логи с таким url
+            Command.same_log_indb(self, options['log_path'])  # Если были добавлены логи с таким url
             try:
                 Command.download_log(self, options['log_path'])  # Подгружаем данные из лога
                 Command.read_parse_log(options['log_path'])  # Читаем и парсим лог
