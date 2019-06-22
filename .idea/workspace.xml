@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6f14193e-da04-44e9-87b9-6c54eca304a8" name="Default Changelist" comment="!">
-      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/3/5/35b8c13cf2eb2a194eada000eb310d65aed53b2a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/index.pb" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sonarlint/issuestore/index.pb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="6f14193e-da04-44e9-87b9-6c54eca304a8" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,8 +46,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/analizer/management/commands/log_parse.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="266">
-              <caret line="106" column="20" lean-forward="true" selection-start-line="106" selection-start-column="20" selection-end-line="106" selection-end-column="20" />
+            <state relative-caret-position="184">
+              <caret line="65" column="72" selection-start-line="65" selection-start-column="72" selection-end-line="65" selection-end-column="72" />
               <folding>
                 <element signature="e#0#65#0" expanded="true" />
               </folding>
@@ -116,7 +112,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/analizer/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1152">
+            <state relative-caret-position="984">
               <caret line="48" column="2" selection-start-line="48" selection-start-column="2" selection-end-line="48" selection-end-column="2" />
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
@@ -137,7 +133,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/apache_log_analize/settings.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
+            <state relative-caret-position="2760">
               <caret line="115" column="23" selection-start-line="115" selection-start-column="23" selection-end-line="115" selection-end-column="23" />
             </state>
           </provider>
@@ -219,29 +215,6 @@
               <item name="apache_log_analize" type="b2602c69:ProjectViewProjectNode" />
               <item name="apache_log_analize" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="apache_log_analize" type="b2602c69:ProjectViewProjectNode" />
-              <item name="apache_log_analize" type="462c0819:PsiDirectoryNode" />
-              <item name="analizer" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="apache_log_analize" type="b2602c69:ProjectViewProjectNode" />
-              <item name="apache_log_analize" type="462c0819:PsiDirectoryNode" />
-              <item name="analizer" type="462c0819:PsiDirectoryNode" />
-              <item name="management" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="apache_log_analize" type="b2602c69:ProjectViewProjectNode" />
-              <item name="apache_log_analize" type="462c0819:PsiDirectoryNode" />
-              <item name="analizer" type="462c0819:PsiDirectoryNode" />
-              <item name="management" type="462c0819:PsiDirectoryNode" />
-              <item name="commands" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="apache_log_analize" type="b2602c69:ProjectViewProjectNode" />
-              <item name="apache_log_analize" type="462c0819:PsiDirectoryNode" />
-              <item name="apache_log_analize" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -317,6 +290,7 @@
       <workItem from="1561203059758" duration="17000" />
       <workItem from="1561208685922" duration="612000" />
       <workItem from="1561210653373" duration="1201000" />
+      <workItem from="1561219756048" duration="358000" />
     </task>
     <task id="LOCAL-00001" summary="Second Comm">
       <created>1561197375725</created>
@@ -332,17 +306,24 @@
       <option name="project" value="LOCAL" />
       <updated>1561199969846</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="!">
+      <created>1561219871829</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1561219871829</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="100928000" />
+    <option name="totallyTimeSpent" value="101286000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="356" y="183" width="1431" height="824" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20495988" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20787746" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -354,7 +335,7 @@
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Database Console" order="7" weight="0.32998884" />
       <window_info anchor="bottom" id="Docker" order="8" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="9" visible="true" weight="0.1112782" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="9" visible="true" weight="0.30676693" />
       <window_info anchor="bottom" id="SonarLint" order="10" />
       <window_info anchor="bottom" id="Database Changes" order="11" weight="0.32998884" />
       <window_info anchor="bottom" id="Statistic" order="12" weight="0.32932332" />
@@ -494,6 +475,16 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/docker-compose.yml" />
+    <entry file="file://$PROJECT_DIR$/analizer/management/commands/log_parse.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="184">
+          <caret line="65" column="72" selection-start-line="65" selection-start-column="72" selection-end-line="65" selection-end-column="72" />
+          <folding>
+            <element signature="e#0#65#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/analizer/urls.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="264">
@@ -538,7 +529,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/analizer/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1152">
+        <state relative-caret-position="984">
           <caret line="48" column="2" selection-start-line="48" selection-start-column="2" selection-end-line="48" selection-end-column="2" />
           <folding>
             <element signature="e#0#32#0" expanded="true" />
@@ -555,18 +546,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/apache_log_analize/settings.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="126">
+        <state relative-caret-position="2760">
           <caret line="115" column="23" selection-start-line="115" selection-start-column="23" selection-end-line="115" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/analizer/management/commands/log_parse.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="266">
-          <caret line="106" column="20" lean-forward="true" selection-start-line="106" selection-start-column="20" selection-end-line="106" selection-end-column="20" />
-          <folding>
-            <element signature="e#0#65#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
