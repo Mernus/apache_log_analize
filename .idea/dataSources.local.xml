@@ -9,5 +9,9 @@
       <auth-required>false</auth-required>
       <introspection-schemas>*:@</introspection-schemas>
     </data-source>
+    <data-source name="Django default" uuid="f950df02-835c-458f-99cd-8f0080ca8f81">
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="SQLITE" exact-version="0" />
+      <introspection-schemas>*:@</introspection-schemas>
+    </data-source>
   </component>
 </project>
