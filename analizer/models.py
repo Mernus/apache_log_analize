@@ -16,9 +16,3 @@ class Logdata(models.Model):
     size_requested_obj = models.CharField(max_length=20, verbose_name="Size of the object requested")
     referer = models.CharField(max_length=500, verbose_name="URLs from which peoples are redirected to mine website")
     logfile = models.ForeignKey(Logfile, on_delete=models.CASCADE, verbose_name="Logfile from which data was added")
-
-    def __iter__(self):
-        for field in self._meta.local_fields:
-            if field.name not in ["id", "logfile"]:
-                value = getattr(self, field.name, None)
-                yield (field.verbose_name, value)
