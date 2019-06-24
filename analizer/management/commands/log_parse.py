@@ -4,6 +4,7 @@ import math
 from tqdm import tqdm
 import os
 import re
+import uuid
 from analizer.models import Logdata, Logfile
 from datetime import datetime
 
@@ -16,8 +17,7 @@ class Command(BaseCommand):
                             required=True,
                             help='Download, parse and push to db data from log(print the url after log_parse)')
 
-    @staticmethod
-    def same_log_indb(self, urllog):
+    def interact_with_same_log_indb(self, urllog):
         # Получаем все логи с данным url
         logs_added = Logfile.objects.filter(log_url=urllog)
         if logs_added:
@@ -48,21 +48,20 @@ class Command(BaseCommand):
                 self.stdout.write("Incorrect answer, try one more time\n\n")  # Если не прошла ни одна проверка,
                 # то выполняем цикл дальше с выводом поясняющего сообщения
 
-    @staticmethod
-    def download_log(self, urllog):
+    def download_log(self, urllog, filename):
         # Пытаемся получить доступ к логу по url
         req = requests.get(urllog, stream=True)
         # Получаем размер файла
         total_size = int(req.headers.get('content-length', 0))
         # Производим запись данных из лога в файл
-        with open('log.txt', 'wb') as file:
+        with open(filename, 'wb') as file:
             for data in tqdm(req.iter_content(1024), total=math.ceil(total_size // 1024), unit='KB',
                              unit_scale=True, desc='Downloading log file'):
                 file.write(data)
         self.stdout.write("\nLog file has been downloaded")
 
     @staticmethod
-    def read_parse_log(urllog):
+    def read_parse_log(urllog, filename):
         pattern = r"([\d.]+) \S+ \S+ \[(\d{2}/[A-Za-z]+/\d{1,4}:\d{1,2}:\d{1,2}:\d{1,2}) (\+\d{4})\]" + \
                   r" \"(\S+) (.*?) (\S+)\" (\d+|-) (\d+|-) \"(.*?)\" \".*?\" \".*?\""
         batch_size = 999
@@ -70,7 +69,7 @@ class Command(BaseCommand):
         new_log = Logfile(log_url=urllog)
         new_log.save()
         # Осуществляем проход по файлу
-        with open('log.txt', 'r') as file:
+        with open(filename, 'r') as file:
             object_batch = []
             for line in tqdm(file.readlines(), desc='Reading and parsing log file', unit_scale=True):
                 # Проверяем строку на соответствию паттерну
@@ -96,10 +95,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options['log_path']:  # Если был отправлен путь
-            Command.same_log_indb(self, options['log_path'])  # Если были добавлены логи с таким url
-            try:
-                Command.download_log(self, options['log_path'])  # Подгружаем данные из лога
-                Command.read_parse_log(options['log_path'])  # Читаем и парсим лог
+            Command.interact_with_same_log_indb(self, options['log_path'])  # Если были добавлены логи с таким url
+            filename = "log-%s.txt" % uuid.uuid4()  # Генерируем уникальное название файла,
+            try:                                    # куда будем писать данные с лога
+                Command.download_log(self, options['log_path'], filename)  # Подгружаем данные из лога
+                Command.read_parse_log(options['log_path'], filename)  # Читаем и парсим лог
                 self.stdout.write("\nLog file has been download, read and parse")
             except KeyboardInterrupt:  # Если обработка лога была отменена, то чистим лог из бд
                 self.stdout.write("\nAction has been cancel by user")
@@ -109,6 +109,6 @@ class Command(BaseCommand):
                     requests.exceptions.InvalidURL):
                 # Если лог не может быть загружен, то выводим пояснение
                 raise CommandError("Error with download log file with url: " + options['log_path'])
-        # Если файл лога был загружен, то удаляем
-        if os.path.isfile('log.txt'):
-            os.remove('log.txt')
+            # Если файл лога был загружен, то удаляем
+            if os.path.isfile(filename):
+                os.remove(filename)

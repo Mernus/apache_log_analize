@@ -16,6 +16,10 @@
                 <td>{{ unic_ips_count }}</td>
             </tr>
             <tr>
+                <th style="width:35%">Sum response size</th>
+                <td>{{ sum_answer_size }}</td>
+            </tr>
+            <tr>
                 <th scope="col" colspan="2">Most Common IP's</th>
             </tr>
             {% for ip, ip_used_num in first_ips %}

@@ -6,6 +6,7 @@ import warnings
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.db.models import Sum, Count
 
 warnings.simplefilter("ignore")
 
@@ -96,36 +97,19 @@ def collect_stats(request, pk_log):
     query = request.GET.get("q")
     logfile = get_object_or_404(Logfile, pk=pk_log)
     object_list = get_obj_list(logfile, query)
-    ips = {}
-    http_methods = {}
-    sum_answer_size = 0
-    # Проходим по данным лога и заполняем словари с ip и http методами
-    # Заполняем в формате {'(метод или ip)': (количество использований)}
-    # Находим сумму всех размеров ответа
-    for log in object_list:
-        string_ip = str(log.ip)
-        if ips.get(string_ip) is not None:
-            ips[string_ip] += 1
-        else:
-            ips[string_ip] = 1
-        if http_methods.get(log.http_method) is not None:
-            http_methods[log.http_method] += 1
-        else:
-            http_methods[log.http_method] = 1
-        try:
-            sum_answer_size += int(log.size_requested_obj)
-        except ValueError:
-            pass
-    # Преобразуем полученные словари в списки кортежей
-    # С сортировкой по количеству использований
-    http_methods_list = sorted(http_methods.items(), key=lambda item: item[1], reverse=True)
-    ips_list = sorted(ips.items(), key=lambda item: item[1], reverse=True)
-    # Получаем количество уникальных ip
-    unic_ips_count = len(ips_list)
+    # Находим сумму всех размеров ответа через агрегированную сумму
+    sum_answer_size = object_list.aggregate(Sum('size_requested_obj'))['size_requested_obj__sum']
+    # Получаем все значения поля http_method, собирая при этом информацию о количестве использований
+    # Затем выбираем значения без повторений и сортируем по убыванию количеству использований
+    unique_http_methods = object_list.values_list('http_method').annotate(
+        http_count=Count('http_method')).distinct().order_by('-http_count')
+    # Получаем все значения поля ip, собирая при этом информацию о количестве использований
+    # Затем выбираем значения без повторений и сортируем по убыванию количеству использований
+    unique_ips = object_list.values_list('ip').annotate(ip_count=Count('ip')).distinct().order_by('-ip_count')
     # Получаем первые 10 ip по популярности
-    ten_first_ip_list = [ip for ip in ips_list if ips_list.index(ip) < 10]
-    context = {'first_ips': ten_first_ip_list, 'http_methods': http_methods_list,
-               'sum_answer_size': sum_answer_size, 'unic_ips_count': unic_ips_count}
+    ten_first_ip_list = unique_ips[:10]
+    context = {'first_ips': ten_first_ip_list, 'http_methods': unique_http_methods,
+               'sum_answer_size': sum_answer_size, 'unic_ips_count': unique_ips.count()}
     return render(request, "analizer/stats.html", context=context)
 
 
