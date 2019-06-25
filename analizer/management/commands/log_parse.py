@@ -61,26 +61,28 @@ class Command(BaseCommand):
         req = requests.get(urllog, stream=True)
         # Получаем размер файла
         total_size = int(req.headers.get('content-length', 0))
-        # Производим запись данных из лога в файл
+        # Создаем файл
         created_file = open(filename, 'w')
         created_file.close()
         cutted_line = ""
+        # Подгружаем часть лога
         with open(filename, 'r+b') as file:
             for data in tqdm(req.iter_content(1024),
                              total=math.ceil(total_size // 1024),
                              unit='KB', unit_scale=True, desc="Download, read and parse log"):
-                file.write(data)
-                file.seek(-len(data), 1)
-                for line in file.readlines():
+                file.write(data)  # Пишем подгруженную часть в файл
+                file.seek(-len(data), 1)  # Перемещаем итератор в файле перед этой частью
+                for line in file.readlines():  # Читаем подгруженную часть
                     line = line.decode('UTF-8')
-                    if line[-1] != '\n':
+                    if line[-1] != '\n':  # Если строка была не польностью подгружена, то запоминаем прочитанную часть
                         cutted_line = line
                         break
-                    line = cutted_line + line
+                    line = cutted_line + line  # Собираем строку
                     cutted_line = ""
-                    match = re.match(pattern, line)
+                    match = re.match(pattern, line)  # Проверяем строку на соответствие паттерну
                     if match is None:
                         continue
+                    # Преобразуем объект Datetime к удобному формату
                     datetime_format = datetime.strptime(match.group(2) + " UTC" + match.group(3),
                                                         '%d/%b/%Y:%H:%M:%S %Z%z')
                     # Добавляем объект в список
@@ -92,9 +94,11 @@ class Command(BaseCommand):
                                                 requested_path=match.group(5), http_protocol=match.group(6),
                                                 status_code=match.group(7), size_requested_obj=match.group(8),
                                                 referer=match.group(9), logfile=new_log))
-                    if len(object_batch) == batch_size:  # sqlite позволяет сохранить максимум 999 объктов за раз
+                    # Как только количество элементов в списке становится максимальным для одноразоввого добавления в бд
+                    if len(object_batch) == batch_size:
                         Logdata.objects.bulk_create(object_batch)
                         object_batch = []
+        # Если нет данных в логе, то чистим бд от лога
         if Logfile.objects.filter(log_url=urllog).latest('added_datetime').logdata_set.count() == 0:
             Logfile.objects.filter(log_url=urllog).latest('added_datetime').delete()
 
