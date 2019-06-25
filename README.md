@@ -98,53 +98,58 @@ Argument name is '--log_path', short name is '-lp'. Argument take string with ur
                             help='Download, parse and push to db data from log(print the url after log_parse)')
 ```
 
-Custom command has static method for download log by urllog and progress bar for download:
+Custom command has static method for download log by urllog and progress bar for download, read and parse downloaded file. File parsed with regular expression, added to list and pushed to db when size of list = 999 to minimize requests to database.
 
 ```
-@staticmethod
-    def download_log(self, urllog):
-        req = requests.get(urllog, stream=True)
-        total_size = int(req.headers.get('content-length', 0))
-        with open('log.txt', 'wb') as file:
-            for data in tqdm(req.iter_content(1024), total=math.ceil(total_size // 1024), unit='KB',
-                             unit_scale=True, desc='Downloading log file'):
-                file.write(data)
-        self.stdout.write("\nLog file has been downloaded")
-```
-
-Also command has static method for read and parse downloaded file. File parsed with regular expression, added to list and pushed to db when size of list = 999 to minimize requests to database.
-
-```
-@staticmethod
-    def read_parse_log(urllog):
+ @staticmethod
+    def read_parse_log(urllog, filename):
         pattern = r"([\d.]+) \S+ \S+ \[(\d{2}/[A-Za-z]+/\d{1,4}:\d{1,2}:\d{1,2}:\d{1,2}) (\+\d{4})\]" + \
                   r" \"(\S+) (.*?) (\S+)\" (\d+|-) (\d+|-) \"(.*?)\" \".*?\" \".*?\""
         batch_size = 999
         new_log = Logfile(log_url=urllog)
         new_log.save()
-        with open('log.txt', 'r') as file:
-            object_batch = []
-            for line in tqdm(file.readlines(), desc='Reading and parsing log file', unit_scale=True):
-                result = re.match(pattern, line)
-                if result is None:
-                    continue
-                datetime_format = datetime.strptime(result.group(2) + " UTC" + result.group(3),
-                                                    '%d/%b/%Y:%H:%M:%S %Z%z')
-                object_batch.append(Logdata(datetime=datetime_format, ip=result.group(1),
-                                            http_method=result.group(4),
-                                            requested_path=result.group(5), http_protocol=result.group(6),
-                                            status_code=result.group(7), size_requested_obj=result.group(8),
-                                            referer=result.group(9), logfile=new_log))
-                if len(object_batch) == batch_size:
-                    Logdata.objects.bulk_create(object_batch)
-                    object_batch.clear()
+        object_batch = []
+        req = requests.get(urllog, stream=True)
+        total_size = int(req.headers.get('content-length', 0))
+        created_file = open(filename, 'w')
+        created_file.close()
+        cutted_line = ""
+        with open(filename, 'r+b') as file:
+            for data in tqdm(req.iter_content(1024),
+                             total=math.ceil(total_size // 1024),
+                             unit='KB', unit_scale=True, desc="Download, read and parse log"):
+                file.write(data)
+                file.seek(-len(data), 1)
+                for line in file.readlines():
+                    line = line.decode('UTF-8')
+                    if line[-1] != '\n':
+                        cutted_line = line
+                        break
+                    line = cutted_line + line
+                    cutted_line = ""
+                    match = re.match(pattern, line)
+                    if match is None:
+                        continue
+                    datetime_format = datetime.strptime(match.group(2) + " UTC" + match.group(3),
+                                                        '%d/%b/%Y:%H:%M:%S %Z%z')
+                    object_batch.append(Logdata(datetime=datetime_format, ip=match.group(1),
+                                                http_method=match.group(4),
+                                                requested_path=match.group(5), http_protocol=match.group(6),
+                                                status_code=match.group(7), size_requested_obj=match.group(8),
+                                                referer=match.group(9), logfile=new_log))
+                    if len(object_batch) == batch_size:
+                        Logdata.objects.bulk_create(object_batch)
+                        object_batch = []
+        if Logfile.objects.filter(log_url=urllog).latest('added_datetime').logdata_set.count() == 0:
+            Logfile.objects.filter(log_url=urllog).latest('added_datetime').delete()
 ```
+
 
 And method to process the situation when logfile with this url is in the database:
 
 ```
 @staticmethod
-    def not_one_log(self, urllog):
+    def interact_with_same_log_indb(self, urllog):
         logs_added = Logfile.objects.filter(log_url=urllog)
         if logs_added:
             self.stdout.write("\nThis log has been also add to database")
@@ -177,21 +182,22 @@ And handle that interact with this methods:
 
 ```
     def handle(self, *args, **options):
-        if options['log_path']:
-            Command.not_one_log(self, options['log_path'])
+        if options['log_path']:  # Если был отправлен путь
+            Command.interact_with_same_log_indb(self, options['log_path'])  # Если были добавлены логи с таким url
+            filename = "log-%s.txt" % uuid.uuid4()
             try:
-                Command.download_log(self, options['log_path'])
-                Command.read_parse_log(options['log_path'])
-                self.stdout.write("\nLog file has been download, read and parse")
-            except KeyboardInterrupt:
+                Command.read_parse_log(options['log_path'], filename)  # Читаем и парсим лог
+                self.stdout.write("\nLog file has been read and parse")
+            except KeyboardInterrupt:  # Если обработка лога была отменена, то чистим лог из бд
                 self.stdout.write("\nAction has been cancel by user")
                 Logfile.objects.filter(log_url=options['log_path']).latest('added_datetime').delete()
             except (
                     requests.exceptions.MissingSchema, requests.exceptions.ConnectionError,
                     requests.exceptions.InvalidURL):
+                # Если лог не может быть загружен, то выводим пояснение
                 raise CommandError("Error with download log file with url: " + options['log_path'])
-        if os.path.isfile('log.txt'):
-            os.remove('log.txt')
+            if os.path.isfile(filename):
+                os.remove(filename)
 ```
 
 After usage log will be deleted.
