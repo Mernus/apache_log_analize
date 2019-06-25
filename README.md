@@ -183,18 +183,17 @@ And handle that interact with this methods:
 ```
     def handle(self, *args, **options):
         if options['log_path']:  # Если был отправлен путь
-            Command.interact_with_same_log_indb(self, options['log_path'])  # Если были добавлены логи с таким url
+            Command.interact_with_same_log_indb(self, options['log_path'])
             filename = "log-%s.txt" % uuid.uuid4()
             try:
-                Command.read_parse_log(options['log_path'], filename)  # Читаем и парсим лог
+                Command.read_parse_log(options['log_path'], filename)
                 self.stdout.write("\nLog file has been read and parse")
-            except KeyboardInterrupt:  # Если обработка лога была отменена, то чистим лог из бд
+            except KeyboardInterrupt:
                 self.stdout.write("\nAction has been cancel by user")
                 Logfile.objects.filter(log_url=options['log_path']).latest('added_datetime').delete()
             except (
                     requests.exceptions.MissingSchema, requests.exceptions.ConnectionError,
                     requests.exceptions.InvalidURL):
-                # Если лог не может быть загружен, то выводим пояснение
                 raise CommandError("Error with download log file with url: " + options['log_path'])
             if os.path.isfile(filename):
                 os.remove(filename)
