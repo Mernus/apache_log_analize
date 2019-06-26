@@ -1,9 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from tqdm import tqdm
 import re
-import uuid
 import requests
-import os
 import math
 from analizer.models import Logdata, Logfile
 from datetime import datetime
