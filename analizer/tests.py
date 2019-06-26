@@ -32,4 +32,4 @@ class ModelTest(TestCase):
                                                    Q(size_requested_obj__icontains='132') |
                                                    Q(referer__icontains='132'))
         self.assertQuerysetEqual(logfile, map(repr, response.context['object_list']))
-        self.assertQuerysetEqual(filtred_log, map(repr, sec_response.context['object_list']), ordered=False)
+        self.assertQuerysetEqual(filtred_log, map(repr, sec_response.context['object_list']))
