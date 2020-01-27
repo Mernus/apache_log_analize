@@ -1,10 +1,8 @@
 from django.core.management.base import BaseCommand, CommandError
+from tqdm import tqdm
+import re
 import requests
 import math
-from tqdm import tqdm
-import os
-import re
-import uuid
 from analizer.models import Logdata, Logfile
 from datetime import datetime
 
@@ -16,6 +14,30 @@ class Command(BaseCommand):
         parser.add_argument('-lp', "--log_path", type=str,
                             required=True,
                             help='Download, parse and push to db data from log(print the url after log_parse)')
+
+    @staticmethod
+    def chech_and_push(pattern, line, object_batch, new_log):
+        batch_size = 999
+        match = re.search(pattern, line)  # Проверяем строку на соответствие паттерну
+        if match is None:
+            return False
+        # Преобразуем объект Datetime к удобному формату
+        datetime_format = datetime.strptime(match.group(2) + " UTC" + match.group(3),
+                                            '%d/%b/%Y:%H:%M:%S %Z%z')
+        # Добавляем объект в список
+        # через группы объекта match
+        # (ip) \S+ \S+ [(дата):(время) (часовой пояс)] "(HTTP метод) (Путь запроса) (HTTP протокол)"
+        #  (код ответа) (размер ответа) "(Реферал)" ".*?" ".*?"
+        object_batch.append(Logdata(datetime=datetime_format, ip=match.group(1),
+                                    http_method=match.group(4),
+                                    requested_path=match.group(5), http_protocol=match.group(6),
+                                    status_code=match.group(7), size_requested_obj=match.group(8),
+                                    referer=match.group(9), logfile=new_log))
+        # Как только количество элементов в списке становится максимальным для одноразоввого добавления в бд
+        if len(object_batch) == batch_size:
+            Logdata.objects.bulk_create(object_batch)
+            object_batch = []
+        return True
 
     def interact_with_same_log_indb(self, urllog):
         # Получаем все логи с данным url
@@ -48,59 +70,42 @@ class Command(BaseCommand):
                 self.stdout.write("Incorrect answer, try one more time\n\n")  # Если не прошла ни одна проверка,
                 # то выполняем цикл дальше с выводом поясняющего сообщения
 
-    def download_log(self, urllog, filename):
-        # Пытаемся получить доступ к логу по url
-        req = requests.get(urllog, stream=True)
-        # Получаем размер файла
-        total_size = int(req.headers.get('content-length', 0))
-        # Производим запись данных из лога в файл
-        with open(filename, 'wb') as file:
-            for data in tqdm(req.iter_content(1024), total=math.ceil(total_size // 1024), unit='KB',
-                             unit_scale=True, desc='Downloading log file'):
-                file.write(data)
-        self.stdout.write("\nLog file has been downloaded")
-
     @staticmethod
-    def read_parse_log(urllog, filename):
+    def read_parse_log(urllog):
         pattern = r"([\d.]+) \S+ \S+ \[(\d{2}/[A-Za-z]+/\d{1,4}:\d{1,2}:\d{1,2}:\d{1,2}) (\+\d{4})\]" + \
                   r" \"(\S+) (.*?) (\S+)\" (\d+|-) (\d+|-) \"(.*?)\" \".*?\" \".*?\""
-        batch_size = 999
         # Сохраняем данный лог в бд
         new_log = Logfile(log_url=urllog)
         new_log.save()
         # Осуществляем проход по файлу
-        with open(filename, 'r') as file:
-            object_batch = []
-            for line in tqdm(file.readlines(), desc='Reading and parsing log file', unit_scale=True):
-                # Проверяем строку на соответствию паттерну
-                result = re.match(pattern, line)
-                if result is None:
-                    continue
-                # Преобразуем объект Datetime к удобному формату
-                datetime_format = datetime.strptime(result.group(2) + " UTC" + result.group(3),
-                                                    '%d/%b/%Y:%H:%M:%S %Z%z')
-                # Добавляем объект в список
-                # через группы объекта match
-                # (ip) \S+ \S+ [(дата):(время) (часовой пояс)] "(HTTP метод) (Путь запроса) (HTTP протокол)"
-                #  (код ответа) (размер ответа) "(Реферал)" ".*?" ".*?"
-                object_batch.append(Logdata(datetime=datetime_format, ip=result.group(1),
-                                            http_method=result.group(4),
-                                            requested_path=result.group(5), http_protocol=result.group(6),
-                                            status_code=result.group(7), size_requested_obj=result.group(8),
-                                            referer=result.group(9), logfile=new_log))
-                # Как только количество элементов в списке становится максимальным для одноразоввого добавления в бд
-                if len(object_batch) == batch_size:
-                    Logdata.objects.bulk_create(object_batch)
-                    object_batch.clear()
+        object_batch = []
+        req = requests.get(urllog, stream=True)
+        # Получаем размер файла
+        total_size = int(req.headers.get('content-length', 0))
+        # Подгружаем часть лога
+        cutted_line = ""
+        for data in tqdm(req.iter_content(1024),
+                         total=math.ceil(total_size // 1024),
+                         unit='KB', unit_scale=True, desc="Download, read and parse log"):
+            data = data.decode('UTF-8').split('\n')
+            if cutted_line:
+                data[0] = cutted_line + data[0]
+            cutted_line = data.pop()
+            for line in data:  # Читаем подгруженную часть
+                Command.chech_and_push(pattern, line, object_batch, new_log)
+            if Command.chech_and_push(pattern, cutted_line, object_batch, new_log):
+                cutted_line = ""
+        # Если нет данных в логе, то чистим бд от лога
+        Logdata.objects.bulk_create(object_batch)
+        if Logfile.objects.filter(log_url=urllog).latest('added_datetime').logdata_set.count() == 0:
+            Logfile.objects.filter(log_url=urllog).latest('added_datetime').delete()
 
     def handle(self, *args, **options):
         if options['log_path']:  # Если был отправлен путь
             Command.interact_with_same_log_indb(self, options['log_path'])  # Если были добавлены логи с таким url
-            filename = "log-%s.txt" % uuid.uuid4()  # Генерируем уникальное название файла,
-            try:                                    # куда будем писать данные с лога
-                Command.download_log(self, options['log_path'], filename)  # Подгружаем данные из лога
-                Command.read_parse_log(options['log_path'], filename)  # Читаем и парсим лог
-                self.stdout.write("\nLog file has been download, read and parse")
+            try:
+                Command.read_parse_log(options['log_path'])  # Читаем и парсим лог
+                self.stdout.write("\nLog file has been read and parse")
             except KeyboardInterrupt:  # Если обработка лога была отменена, то чистим лог из бд
                 self.stdout.write("\nAction has been cancel by user")
                 Logfile.objects.filter(log_url=options['log_path']).latest('added_datetime').delete()
@@ -109,6 +114,3 @@ class Command(BaseCommand):
                     requests.exceptions.InvalidURL):
                 # Если лог не может быть загружен, то выводим пояснение
                 raise CommandError("Error with download log file with url: " + options['log_path'])
-            # Если файл лога был загружен, то удаляем
-            if os.path.isfile(filename):
-                os.remove(filename)
